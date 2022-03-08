@@ -19,6 +19,7 @@ setup(
         "bin/maf/glance_dir",
         "bin/maf/ddf_dir",
         "bin/maf/maf_night_report",
+        "bin/maf/resultdb_combine",
         "bin/maf/scimaf_dir",
         "bin/maf/showMaf",
         "bin/maf/generate_ss",
