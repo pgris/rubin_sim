@@ -142,7 +142,7 @@ class SNNSNMetric(BaseMetric):
         zStep=0.03,
         daymaxStep=4.,
         pixArea=9.6,
-        verbose=True,
+        verbose=False,
         ploteffi=False,
         n_bef=3,
         n_aft=8,
@@ -249,10 +249,8 @@ class SNNSNMetric(BaseMetric):
 
         # supernovae parameters
         self.params = ["x0", "x1", "daymax", "color"]
-
-        # r = [(-1.0, -1.0)]
-        self.bad = np.rec.fromrecords([(-1.0, -1.0)], names=["nSN", "zlim"])
-        # self.bad = {'nSN': -1.0, 'zlim': -1.0}
+        # return 0, 0 if we can't compute anything.
+        self.bad = np.rec.fromrecords([(0., 0.)], names=["nSN", "zlim"])
 
         # LSST starting date
         self.mjd_LSST_Start = mjd_LSST_Start
@@ -339,7 +337,7 @@ class SNNSNMetric(BaseMetric):
         season_info = season_info[idx]
 
         # If we don't have many observations, bail out
-        if season_info.empty:
+        if len(season_info) == 0:
             return nlr.merge_arrays([idarray, self.bad], flatten=True)
         else:
             if self.verbose:
@@ -366,6 +364,9 @@ class SNNSNMetric(BaseMetric):
         # remove dur_z with negative season lengths
         idx = dur_z["season_length"] >= 60.0
         dur_z = dur_z[idx]
+
+        if len(dur_z) == 0:
+            return nlr.merge_arrays([idarray, self.bad], flatten=True)
 
         if self.verbose:
             print('duration', dur_z)
@@ -695,7 +696,6 @@ class SNNSNMetric(BaseMetric):
             zlimsdf = self.zlims(effi_seasondf, dur_z, groupnames)
             if self.verbose:
                 print('zlims', zlimsdf)
-
             # estimate number of medium supernovae
             zlimsdf["nsn_med"], zlimsdf["var_nsn_med"] = zlimsdf.apply(
                 lambda x: self.nsn_typedf(x, 0.0, 0.0, effi_seasondf, dur_z),
@@ -1351,7 +1351,9 @@ class SNNSNMetric(BaseMetric):
         season = np.median(grp["season"])
         idx = duration_z["season"] == season
         seas_duration_z = duration_z[idx]
-
+        if len(seas_duration_z) <= 1:
+            return 0
+        
         durinterp_z = interp1d(
             seas_duration_z["z"],
             seas_duration_z["season_length"],
