@@ -225,9 +225,6 @@ class SNNSNMetric(BaseMetric):
         # supernovae parameters for fisher estimation
         self.params = ["x0", "x1", "daymax", "color"]
 
-        # bad pixel
-        self.badval = np.rec.fromrecords([(0.0, 0.0)], names=["nSN", "zlim"])
-
     def run(self, dataSlice, slicePoint=None):
         """
         Run method of the metric
